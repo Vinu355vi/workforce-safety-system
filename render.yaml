@@ -12,6 +12,8 @@ services:
     startCommand: npm start
     plan: free
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: DB_HOST
         fromDatabase:
           name: workforce-safety-db
@@ -46,6 +48,8 @@ services:
     startCommand: npm start
     plan: free
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: NEXT_PUBLIC_API_URL
         fromService:
           type: web
