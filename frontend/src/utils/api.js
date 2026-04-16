@@ -67,6 +67,7 @@ export const videoAPI = {
 
 // Reports API
 export const reportsAPI = {
+  getReportByType: (type) => api.get(`/reports/${type}`),
   getDailyReport: () => api.get('/reports/daily'),
   getWeeklyReport: () => api.get('/reports/weekly'),
   getMonthlyReport: () => api.get('/reports/monthly'),

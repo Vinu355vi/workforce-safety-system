@@ -25,7 +25,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
-import axios from 'axios';
+import { reportsAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 ChartJS.register(
@@ -51,13 +51,10 @@ export default function Reports() {
     fetchComplianceData();
   }, [reportType]);
 
-  const fetchReport = async () => {
+    const fetchReport = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/reports/${reportType}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await reportsAPI.getReportByType(reportType);
       setReportData(response.data.report);
     } catch (error) {
       toast.error('Failed to fetch report: ' + error.message);
@@ -68,10 +65,7 @@ export default function Reports() {
 
   const fetchComplianceData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/reports/ppe-compliance', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await reportsAPI.getPPEComplianceReport();
       setComplianceData(response.data.complianceData);
     } catch (error) {
       console.error('Failed to fetch compliance data:', error);
@@ -80,11 +74,7 @@ export default function Reports() {
 
   const exportReport = async (format) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/reports/export/${reportType}?format=${format}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
-      });
+      const response = await reportsAPI.exportReport(reportType, format);
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');

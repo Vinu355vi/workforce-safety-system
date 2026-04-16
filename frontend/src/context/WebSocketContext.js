@@ -13,7 +13,9 @@ export function WebSocketProvider({ children }) {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    // Use specific WS URL or fallback to the origin of the API URL or localhost
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')) || 'http://localhost:5000';
+    const newSocket = io(wsUrl);
     setSocket(newSocket);
 
     newSocket.on('detection-update', (data) => {

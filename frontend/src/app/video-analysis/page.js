@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { UploadIcon, VideoIcon, FileTextIcon, TrashIcon, DownloadIcon } from 'lucide-react';
-import axios from 'axios';
+import { videoAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 export default function VideoAnalysis() {
@@ -22,13 +22,7 @@ export default function VideoAnalysis() {
 
     setUploading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/video/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await videoAPI.uploadVideo(formData);
       
       toast.success('Video uploaded successfully');
       await analyzeVideo(response.data.analysisId);
@@ -43,10 +37,7 @@ export default function VideoAnalysis() {
   const analyzeVideo = async (analysisId) => {
     setAnalyzing(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/video/analyze/${analysisId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await videoAPI.analyzeVideo(analysisId);
       toast.success('Video analysis completed');
     } catch (error) {
       toast.error('Analysis failed: ' + error.message);
@@ -57,10 +48,7 @@ export default function VideoAnalysis() {
 
   const fetchAnalyses = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/video/analyses', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await videoAPI.getUserAnalyses();
       setAnalyses(response.data.analyses);
     } catch (error) {
       console.error('Failed to fetch analyses:', error);
@@ -69,10 +57,7 @@ export default function VideoAnalysis() {
 
   const deleteAnalysis = async (analysisId) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/video/analysis/${analysisId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await videoAPI.deleteAnalysis(analysisId);
       toast.success('Analysis deleted');
       fetchAnalyses();
       if (selectedAnalysis?.id === analysisId) {

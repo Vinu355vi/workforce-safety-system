@@ -1,4 +1,4 @@
-const tf = require('@tensorflow/tfjs-node');
+const tf = require('@tensorflow/tfjs');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
@@ -59,10 +59,10 @@ class YOLODetector {
       activation: 'relu',
       padding: 'same'
     }));
-    model.add(tf.layers.globalAveragePooling2d());
+    model.add(tf.layers.globalAveragePooling2d({ dataFormat: 'channelsLast' }));
     model.add(tf.layers.dense({ units: 128, activation: 'relu' }));
     model.add(tf.layers.dropout({ rate: 0.5 }));
-    model.add(tf.layers.dense({ units: len(this.classes) * 5, activation: 'sigmoid' }));
+    model.add(tf.layers.dense({ units: this.classes.length * 5, activation: 'sigmoid' }));
     
     return model;
   }

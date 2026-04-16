@@ -16,6 +16,43 @@ function setupWebSocket(server) {
     socket.on('stop-monitoring', () => {
       stopRealTimeMonitoring(socket);
     });
+
+    socket.on('live-detections', (data) => {
+      const detections = data.detections || [];
+      
+      detections.forEach(worker => {
+        trackingService.updateWorkerTracking(
+          worker.workerId,
+          detections,
+          new Date()
+        );
+        const trackingWorker = trackingService.workers.get(worker.workerId);
+        if (trackingWorker) {
+          trackingWorker.ppeCompliance = { compliant: worker.compliant };
+          trackingWorker.ppe = worker.ppe;
+        }
+      });
+
+      const workersData = trackingService.getAllWorkers();
+      
+      const stats = {
+        totalWorkers: workersData.length,
+        activeWorkers: workersData.filter(w => w.status === 'active').length,
+        compliantWorkers: workersData.filter(w => w.ppeCompliance?.compliant).length,
+        alertsCount: workersData.filter(w => w.alert).length
+      };
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        detections: detections,
+        workers: workersData,
+        stats: stats
+      };
+
+      // Broadcast and send back to sender
+      socket.broadcast.emit('detection-update', payload);
+      socket.emit('detection-update', payload);
+    });
     
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);
@@ -27,24 +64,43 @@ function setupWebSocket(server) {
 let monitoringInterval = null;
 
 function startRealTimeMonitoring(socket) {
+  if (monitoringInterval) clearInterval(monitoringInterval);
+  
   monitoringInterval = setInterval(async () => {
     // Simulate real-time detection (replace with actual camera feed)
     const mockDetections = generateMockDetections();
     
+    // Update tracking for each worker detected
+    mockDetections.forEach(worker => {
+      const isCompliant = worker.ppe.helmet && worker.ppe.mask && worker.ppe.vest;
+      const tracked = trackingService.updateWorkerTracking(
+        worker.workerId,
+        mockDetections,
+        new Date()
+      );
+      const trackingWorker = trackingService.workers.get(worker.workerId);
+      if (trackingWorker) {
+        trackingWorker.ppeCompliance = { compliant: isCompliant };
+        trackingWorker.ppe = worker.ppe;
+      }
+    });
+
     // Process detections and update tracking
     const workersData = trackingService.getAllWorkers();
     
     // Send updates to client
+    const stats = {
+      totalWorkers: workersData.length,
+      activeWorkers: workersData.filter(w => w.status === 'active').length,
+      compliantWorkers: workersData.filter(w => w.ppeCompliance?.compliant).length,
+      alertsCount: workersData.filter(w => w.alert).length
+    };
+
     socket.emit('detection-update', {
       timestamp: new Date().toISOString(),
       detections: mockDetections,
       workers: workersData,
-      stats: {
-        totalWorkers: workersData.length,
-        activeWorkers: workersData.filter(w => w.status === 'active').length,
-        compliantWorkers: workersData.filter(w => w.ppeCompliance?.compliant).length,
-        alertsCount: Math.floor(Math.random() * 5)
-      }
+      stats: stats
     });
   }, 1000);
 }

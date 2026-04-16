@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { ShieldIcon, MailIcon, LockIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import { authAPI } from '../../utils/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const response = await authAPI.login(formData);
       localStorage.setItem('token', response.data.token);
       toast.success('Login successful!');
       router.push('/dashboard');

@@ -84,18 +84,42 @@ async function processVideoFrames(videoPath) {
     }
   };
   
+  let helmetCount = 0;
+  let maskCount = 0;
+  let vestCount = 0;
+  let totalFramesChecked = 10;
+
   // Simulate detection results
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < totalFramesChecked; i++) {
+    const workersInFrame = Math.floor(Math.random() * 5) + 1;
+    results.summary.totalWorkers += workersInFrame;
+
+    const hasHelmet = Math.random() > 0.2;
+    const hasMask = Math.random() > 0.3;
+    const hasVest = Math.random() > 0.4;
+
+    if (hasHelmet) helmetCount++;
+    if (hasMask) maskCount++;
+    if (hasVest) vestCount++;
+
     results.detections.push({
       frame: i * 30,
-      workers: Math.floor(Math.random() * 5) + 1,
+      workers: workersInFrame,
       ppeCompliance: {
-        helmet: Math.random() > 0.2,
-        mask: Math.random() > 0.3,
-        vest: Math.random() > 0.4
+        helmet: hasHelmet,
+        mask: hasMask,
+        vest: hasVest
       }
     });
   }
+
+  // Returns the raw counts since frontend calculates the percentage 
+  // (e.g. helmet / detections.length * 100)
+  results.summary.ppeCompliance = {
+    helmet: helmetCount,
+    mask: maskCount,
+    vest: vestCount
+  };
   
   return results;
 }
