@@ -13,6 +13,12 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 
+const fs = require('fs');
+const storageDir = process.env.VIDEO_STORAGE_PATH || './uploads';
+if (!fs.existsSync(storageDir)) {
+  fs.mkdirSync(storageDir, { recursive: true });
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {

@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const fs = require('fs');
 const videoController = require('../controllers/videoController');
 const auth = require('../middleware/auth');
 
+const storageDir = process.env.VIDEO_STORAGE_PATH || './uploads';
+if (!fs.existsSync(storageDir)) {
+  fs.mkdirSync(storageDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, process.env.VIDEO_STORAGE_PATH || './uploads');
+    cb(null, storageDir);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
