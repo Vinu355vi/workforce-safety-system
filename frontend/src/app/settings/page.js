@@ -36,8 +36,9 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await axios.get(|| ''}/api/auth/me', {
-        headers: { Authorization: 'Bearer ${token}' }
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const response = await axios.get(`${API_URL.replace(/\/api$/, '')}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         setProfile({
@@ -71,11 +72,12 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(|| ''}/api/auth/change-password', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const response = await axios.post(`${API_URL.replace(/\/api$/, '')}/api/auth/change-password`, {
         currentPassword: passwords.currentPassword,
         newPassword: passwords.newPassword
       }, {
-        headers: { Authorization: 'Bearer ${token}' }
+        headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.data.success) {
@@ -110,36 +112,36 @@ export default function SettingsPage() {
           <div className="flex flex-col space-y-2">
             <button
               onClick={() => setActiveTab('profile')}
-              className={'flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'profile' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-              }'}
+              }`}
             >
               <UserIcon size={18} />
               Profile Details
             </button>
             <button
               onClick={() => setActiveTab('security')}
-              className={'flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'security' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-              }'}
+              }`}
             >
               <LockIcon size={18} />
               Security
             </button>
             <button
               onClick={() => setActiveTab('notifications')}
-              className={'flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'notifications' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-              }'}
+              }`}
             >
               <BellIcon size={18} />
               Alert Preferences
             </button>
             <button
               onClick={() => setActiveTab('system')}
-              className={'flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'system' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-              }'}
+              }`}
             >
               <DatabaseIcon size={18} />
               System Config
