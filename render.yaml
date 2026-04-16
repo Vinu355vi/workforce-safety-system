@@ -50,9 +50,9 @@ services:
         fromService:
           type: web
           name: workforce-safety-backend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
       - key: NEXT_PUBLIC_WS_URL
         fromService:
           type: web
           name: workforce-safety-backend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
