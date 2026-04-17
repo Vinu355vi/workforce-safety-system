@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 import { WebSocketProvider } from '@/context/WebSocketContext';
+import AppLayout from '@/components/AppLayout';
 import './globals.css';
 
 const theme = createTheme({
@@ -32,7 +33,9 @@ export default function RootLayout({ children }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <WebSocketProvider>
-            {children}
+            <AppLayout>
+              {children}
+            </AppLayout>
             <Toaster 
               position="top-right"
               toastOptions={{
