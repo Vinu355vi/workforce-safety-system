@@ -6,8 +6,11 @@ export default function Navbar() {
   return (
     <nav className="fixed w-full top-0 z-50 glass-effect border-b border-white/5 rounded-none px-6 py-4 flex justify-between items-center transition-all bg-[#0a0515]/60 backdrop-blur-2xl">
       <div className="flex items-center gap-2 ml-4">
-        <ShieldIcon className="w-8 h-8 text-purple-500 glow-effect" />
-        <span className="font-bold text-xl text-white tracking-widest">NEXVISI</span>
+        <ShieldIcon className="w-8 h-8 text-blue-500 glow-effect" />
+        <span className="font-bold text-xl tracking-widest">
+          <span className="text-blue-400">Safety</span>
+          <span className="text-emerald-400">Monitor</span>
+        </span>
       </div>
       
       <div className="hidden md:flex space-x-12 absolute left-1/2 -translate-x-1/2">

@@ -66,7 +66,10 @@ export default function LandingPage() {
           >
             <div className="flex items-center justify-center gap-2 mb-6">
               <ShieldIcon className="w-10 h-10 text-blue-500 glow-effect" />
-              <span className="text-xl font-bold tracking-widest text-blue-400">NEXVISI SAFETY</span>
+              <span className="text-xl font-bold tracking-widest">
+                <span className="text-blue-400">Safety</span>
+                <span className="text-emerald-400">Monitor</span>
+              </span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-extrabold mb-6 leading-tight">
               Intelligent <span className="gradient-text">Workforce</span> Monitoring

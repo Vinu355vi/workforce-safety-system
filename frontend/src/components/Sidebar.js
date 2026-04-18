@@ -24,8 +24,7 @@ const menuItems = [
   { path: '/settings', icon: SettingsIcon, label: 'Settings' },
 ];
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+export default function Sidebar({ isOpen, setIsOpen }) {
   const pathname = usePathname();
 
   const handleLogout = () => {
@@ -42,26 +41,36 @@ export default function Sidebar() {
         {isOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
       </button>
 
-      <motion.aside
-        initial={{ x: -280 }}
-        animate={{ x: isOpen ? 0 : -280 }}
-        transition={{ duration: 0.3 }}
-        className={`fixed left-0 top-0 h-full w-64 bg-gray-900 shadow-xl z-40`}
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 h-full w-64 bg-gray-900 shadow-xl z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        <div className="p-6">
+        <div className="p-6 h-full flex flex-col">
           <div className="flex items-center gap-2 mb-8">
             <ShieldIcon className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-xl font-bold gradient-text">SafetyMonitor</h1>
+              <h1 className="text-xl font-bold">
+                <span className="text-blue-400">Safety</span>
+                <span className="text-emerald-400">Monitor</span>
+              </h1>
               <p className="text-xs text-gray-400">Workforce Safety System</p>
             </div>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-2 flex-grow">
             {menuItems.map((item) => {
               const isActive = pathname === item.path;
               return (
-                <Link key={item.path} href={item.path}>
+                <Link key={item.path} href={item.path} onClick={() => setIsOpen(false)}>
                   <motion.div
                     whileHover={{ x: 5 }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
@@ -78,7 +87,7 @@ export default function Sidebar() {
             })}
           </nav>
 
-          <div className="absolute bottom-8 left-6 right-6">
+          <div className="mt-auto">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-900 hover:text-red-300 transition-all w-full"
@@ -88,12 +97,7 @@ export default function Sidebar() {
             </button>
           </div>
         </div>
-      </motion.aside>
-
-      {/* Main content padding */}
-      <div className={`transition-all duration-300 ${isOpen ? 'lg:ml-64' : ''}`}>
-        {/* Your main content here */}
-      </div>
+      </aside>
     </>
   );
 }

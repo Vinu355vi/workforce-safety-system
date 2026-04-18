@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -8,6 +9,7 @@ import Footer from './Footer';
 
 export default function AppLayout({ children }) {
   const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Pages that don't need the dashboard sidebar
   const isPublicPage = pathname === '/' || pathname === '/login' || pathname === '/signup';
@@ -28,12 +30,12 @@ export default function AppLayout({ children }) {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Sidebar for Dashboard Routes */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       {/* Main Content Area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden pt-12 lg:pt-0 lg:ml-64 transition-all duration-300">
+      <div className={`relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden pt-12 lg:pt-0 transition-all duration-300 lg:ml-64`}>
         <Header />
-        <main className="w-full">
+        <main className="w-full h-full">
           {children}
         </main>
       </div>
