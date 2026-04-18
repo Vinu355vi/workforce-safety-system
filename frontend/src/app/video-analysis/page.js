@@ -1,6 +1,6 @@
  'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { UploadIcon, VideoIcon, FileTextIcon, TrashIcon, DownloadIcon } from 'lucide-react';
 import { videoAPI } from '../../utils/api';
@@ -12,6 +12,10 @@ export default function VideoAnalysis() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [analyses, setAnalyses] = useState([]);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+
+  useEffect(() => {
+    fetchAnalyses();
+  }, []);
 
   const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
@@ -64,7 +68,15 @@ export default function VideoAnalysis() {
         setSelectedAnalysis(null);
       }
     } catch (error) {
-      toast.error('Delete failed: ' + error.message);
+      if (error.response?.status === 404) {
+        toast.success('Analysis deleted');
+        fetchAnalyses();
+        if (selectedAnalysis?.id === analysisId) {
+          setSelectedAnalysis(null);
+        }
+      } else {
+        toast.error('Delete failed: ' + error.message);
+      }
     }
   };
 

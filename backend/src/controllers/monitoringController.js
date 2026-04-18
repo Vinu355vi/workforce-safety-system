@@ -1,5 +1,6 @@
 const Worker = require('../models/Worker');
 const Alert = require('../models/Alert');
+const VideoAnalysis = require('../models/VideoAnalysis');
 const trackingService = require('../services/trackingService');
 const { Op } = require('sequelize');
 
@@ -30,9 +31,9 @@ exports.getWorkerById = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const totalWorkers = await Worker.count();
-    const activeWorkers = await Worker.count({ where: { status: 'active' } });
-    const compliantWorkers = await Worker.count({
+    let totalWorkers = await Worker.count();
+    let activeWorkers = await Worker.count({ where: { status: 'active' } });
+    let compliantWorkers = await Worker.count({
       where: {
         ppeCompliance: {
           compliant: true
@@ -40,6 +41,22 @@ exports.getStats = async (req, res) => {
       }
     });
     const alerts = await Alert.count({ where: { resolved: false } });
+
+    // Aggregate Video Analysis Data
+    const videos = await VideoAnalysis.findAll({ where: { status: 'completed' } });
+    videos.forEach(video => {
+      const summary = video.results?.summary;
+      if (summary) {
+        totalWorkers += summary.totalWorkers || 0;
+        activeWorkers += summary.totalWorkers || 0;
+        const fullyCompliant = Math.min(
+          summary.ppeCompliance?.helmet || 0,
+          summary.ppeCompliance?.mask || 0,
+          summary.ppeCompliance?.vest || 0
+        );
+        compliantWorkers += fullyCompliant;
+      }
+    });
 
     res.json({
       success: true,

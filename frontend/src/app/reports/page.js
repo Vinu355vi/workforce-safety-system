@@ -108,10 +108,10 @@ export default function Reports() {
     datasets: [
       {
         label: 'Compliance Rate',
-        data: complianceData ? [
-          (complianceData.helmet / reportData?.summary?.totalWorkers * 100).toFixed(1),
-          (complianceData.mask / reportData?.summary?.totalWorkers * 100).toFixed(1),
-          (complianceData.vest / reportData?.summary?.totalWorkers * 100).toFixed(1)
+        data: complianceData && reportData?.summary?.totalWorkers > 0 ? [
+          (complianceData.helmet / reportData.summary.totalWorkers * 100).toFixed(1),
+          (complianceData.mask / reportData.summary.totalWorkers * 100).toFixed(1),
+          (complianceData.vest / reportData.summary.totalWorkers * 100).toFixed(1)
         ] : [0, 0, 0],
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',

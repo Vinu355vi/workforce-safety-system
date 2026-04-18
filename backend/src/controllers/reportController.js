@@ -1,5 +1,6 @@
 const Worker = require('../models/Worker');
 const Alert = require('../models/Alert');
+const VideoAnalysis = require('../models/VideoAnalysis');
 const { sequelize } = require('../utils/database');
 const { Op } = require('sequelize');
 const PDFDocument = require('pdfkit');
@@ -48,16 +49,41 @@ exports.getMonthlyReport = async (req, res) => {
 exports.getPPEComplianceReport = async (req, res) => {
   try {
     const workers = await Worker.findAll();
-    const totalWorkers = workers.length;
-    const compliantWorkers = workers.filter(w => 
+    const videos = await VideoAnalysis.findAll({ where: { status: 'completed' } });
+
+    let totalWorkers = workers.length;
+    let compliantWorkers = workers.filter(w => 
       w.ppeCompliance && w.ppeCompliance.compliant
     ).length;
-    
+
+    let helmetCount = workers.filter(w => w.ppeCompliance?.helmet).length;
+    let maskCount = workers.filter(w => w.ppeCompliance?.mask).length;
+    let vestCount = workers.filter(w => w.ppeCompliance?.vest).length;
+
+    // Aggregate Video Analysis Data
+    videos.forEach(video => {
+      const summary = video.results?.summary;
+      if (summary) {
+        totalWorkers += summary.totalWorkers || 0;
+        helmetCount += summary.ppeCompliance?.helmet || 0;
+        maskCount += summary.ppeCompliance?.mask || 0;
+        vestCount += summary.ppeCompliance?.vest || 0;
+        
+        // Approximate fully compliant based on the lowest count
+        const fullyCompliant = Math.min(
+          summary.ppeCompliance?.helmet || 0,
+          summary.ppeCompliance?.mask || 0,
+          summary.ppeCompliance?.vest || 0
+        );
+        compliantWorkers += fullyCompliant;
+      }
+    });
+
     const complianceData = {
-      overall: (compliantWorkers / totalWorkers * 100).toFixed(2),
-      helmet: workers.filter(w => w.ppeCompliance?.helmet).length,
-      mask: workers.filter(w => w.ppeCompliance?.mask).length,
-      vest: workers.filter(w => w.ppeCompliance?.vest).length,
+      overall: totalWorkers > 0 ? (compliantWorkers / totalWorkers * 100).toFixed(2) : "0.00",
+      helmet: helmetCount,
+      mask: maskCount,
+      vest: vestCount,
       byDepartment: {}
     };
     
@@ -173,6 +199,7 @@ async function generateReport(startDate, endDate) {
 }
 
 function calculateComplianceRate(workers) {
+  if (workers.length === 0) return "0.00";
   const compliant = workers.filter(w => w.ppeCompliance?.compliant).length;
   return (compliant / workers.length * 100).toFixed(2);
 }
