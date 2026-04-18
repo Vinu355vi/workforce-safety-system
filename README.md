@@ -107,12 +107,12 @@ Below are some visual representations of the application:
 
 ### Landing & Services Home
 
-![future View](./assets/future.png)
-![Workforce Safety System - Landing Page](./assets/screens/service.png)
+
+![Workforce Safety System - Service Page](./assets/screens/service.png)
 <p align="center">
   <img src=".\frontend\assets\future.png" width="500"/>
 </p>
-*(Note: Replace local placeholder links with your actual final asset directory paths)*
+
 
 ---
 
