@@ -108,8 +108,8 @@ npm run dev
 Below are some visual representations of the application:
 
 ### Landing & Services Home
-![Services View](./assets/screens/services.png)
-
+![land View](./assets/land.png)
+![future View](./assets/future.png)
 *(Note: Replace local placeholder links with your actual final asset directory paths)*
 
 ---
