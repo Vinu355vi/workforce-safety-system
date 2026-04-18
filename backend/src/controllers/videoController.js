@@ -160,8 +160,12 @@ exports.deleteAnalysis = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Analysis not found' });
     }
     
-    // Delete file from storage
-    await fs.unlink(analysis.filePath);
+    // Delete file from storage conditionally
+    try {
+      await fs.unlink(analysis.filePath);
+    } catch (err) {
+      console.warn('File already deleted or inaccessible:', err.message);
+    }
     
     await analysis.destroy();
     
