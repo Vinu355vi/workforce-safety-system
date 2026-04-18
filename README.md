@@ -4,9 +4,7 @@
 <p align="center">
   <img src=".\frontend\assets\land.png" width="500"/>
 </p>
-E:\Personal_Projects\workforce-safety-system\frontend\assets\land.png
 
-E:\Personal_Projects\workforce-safety-system\frontend\assets\future.png
 
 ## 📖 About the Project
 
@@ -108,8 +106,12 @@ npm run dev
 Below are some visual representations of the application:
 
 ### Landing & Services Home
-![land View](./assets/land.png)
+
 ![future View](./assets/future.png)
+![Workforce Safety System - Landing Page](./assets/screens/service.png)
+<p align="center">
+  <img src=".\frontend\assets\future.png" width="500"/>
+</p>
 *(Note: Replace local placeholder links with your actual final asset directory paths)*
 
 ---
