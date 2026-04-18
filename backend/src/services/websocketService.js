@@ -1,5 +1,7 @@
 const detectionService = require('./detectionService');
 const trackingService = require('./trackingService');
+const Worker = require('../models/Worker');
+const Alert = require('../models/Alert');
 
 let io;
 
@@ -17,10 +19,10 @@ function setupWebSocket(server) {
       stopRealTimeMonitoring(socket);
     });
 
-    socket.on('live-detections', (data) => {
+    socket.on('live-detections', async (data) => {
       const detections = data.detections || [];
       
-      detections.forEach(worker => {
+      for (const worker of detections) {
         trackingService.updateWorkerTracking(
           worker.workerId,
           detections,
@@ -28,10 +30,53 @@ function setupWebSocket(server) {
         );
         const trackingWorker = trackingService.workers.get(worker.workerId);
         if (trackingWorker) {
-          trackingWorker.ppeCompliance = { compliant: worker.compliant };
+          trackingWorker.ppeCompliance = { 
+            compliant: worker.compliant,
+            helmet: worker.ppe?.helmet,
+            mask: worker.ppe?.mask,
+            vest: worker.ppe?.vest
+          };
           trackingWorker.ppe = worker.ppe;
+
+          // Sync to Database periodically or create if not exists
+          try {
+            let dbWorker = await Worker.findOne({ where: { workerId: trackingWorker.workerId } });
+            if (!dbWorker) {
+              dbWorker = await Worker.create({
+                workerId: trackingWorker.workerId,
+                name: `Worker ${trackingWorker.workerId.split('_')[1] || trackingWorker.workerId}`,
+                department: 'General',
+                status: trackingWorker.status,
+                totalActiveTime: trackingWorker.totalActiveTime,
+                ppeCompliance: trackingWorker.ppeCompliance
+              });
+            } else {
+              dbWorker.status = trackingWorker.status;
+              dbWorker.totalActiveTime = trackingWorker.totalActiveTime;
+              dbWorker.ppeCompliance = trackingWorker.ppeCompliance;
+              await dbWorker.save();
+            }
+            
+            // Check for new PPE violation alert
+            if (!worker.compliant) {
+              const recentAlert = await Alert.findOne({
+                where: { workerId: worker.workerId, resolved: false }
+              });
+              if (!recentAlert) {
+                await Alert.create({
+                  workerId: worker.workerId,
+                  alertType: 'ppe_violation',
+                  severity: 'high',
+                  message: `PPE violation detected: missing required gear.`,
+                  resolved: false
+                });
+              }
+            }
+          } catch (err) {
+            console.error('Error syncing worker to DB:', err);
+          }
         }
-      });
+      }
 
       const workersData = trackingService.getAllWorkers();
       

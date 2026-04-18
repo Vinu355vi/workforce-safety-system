@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Webcam from 'react-webcam';
 import { 
@@ -14,8 +14,10 @@ import {
   ActivityIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { WebSocketContext } from '../../context/WebSocketContext';
 
 export default function LiveMonitoring() {
+  const { socket } = useContext(WebSocketContext) || {};
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [workers, setWorkers] = useState([]);
@@ -63,10 +65,11 @@ export default function LiveMonitoring() {
       
       // Adjust bounding boxes to be more accurate (webcam scales down, so these are relative)
       const formattedDetections = personDetections.map((p, i) => {
-        // Evaluate simulated PPE compliance based on confidence threshold for realism
-        const hasHelmet = Math.random() > 0.3;
-        const hasMask = Math.random() > 0.2;
-        const hasVest = Math.random() > 0.4;
+        // Since coco-ssd can only detect 'person', we accurate default to no PPE 
+        // for realistic testing when the user is not wearing any gear
+        const hasHelmet = false;
+        const hasMask = false;
+        const hasVest = false;
         const isCompliant = hasHelmet && hasMask && hasVest;
         
         return {
@@ -84,14 +87,21 @@ export default function LiveMonitoring() {
 
       setDetections(formattedDetections);
       
-      // Update mocked tracking logic natively
-      setWorkers(formattedDetections.map(d => ({
+      const newWorkers = formattedDetections.map(d => ({
         workerId: d.workerId,
         status: 'active',
         ppeCompliance: d.ppe,
         compliant: d.compliant,
         lastActiveTime: new Date().toISOString()
-      })));
+      }));
+      
+      // Update mocked tracking logic natively
+      setWorkers(newWorkers);
+
+      // Emit to websocket if available
+      if (socket && newWorkers.length > 0) {
+        socket.emit('live-detections', { detections: newWorkers });
+      }
 
     } catch (error) {
       console.error('Detection Error', error);

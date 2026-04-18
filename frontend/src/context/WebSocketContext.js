@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
-const WebSocketContext = createContext();
+export const WebSocketContext = createContext();
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
