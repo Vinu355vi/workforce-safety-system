@@ -56,23 +56,54 @@ ChartJS.register(
 
 export default function Dashboard() {
   const router = useRouter();
-  const { workers, stats, alerts, detections } = useWebSocket();
+  const { workers: wsWorkers, stats: wsStats, alerts: wsAlerts, detections } = useWebSocket();
   const [timeRange, setTimeRange] = useState('today');
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [recentActivities, setRecentActivities] = useState([]);
+  
+  // Local state for initial data fetch
+  const [initialStats, setInitialStats] = useState({});
+  const [initialWorkers, setInitialWorkers] = useState([]);
+  const [initialAlerts, setInitialAlerts] = useState([]);
 
-  // Generate sample activity data
+  // Fetch initial data because WS only fires on detection events
   useEffect(() => {
-    const activities = [
-      { id: 1, worker: 'John Doe', action: 'Started shift', time: '2 hours ago', type: 'start' },
-      { id: 2, worker: 'Jane Smith', action: 'PPE violation detected', time: '3 hours ago', type: 'violation' },
-      { id: 3, worker: 'Mike Johnson', action: 'Completed task', time: '4 hours ago', type: 'complete' },
-      { id: 4, worker: 'Sarah Williams', action: 'Inactivity alert', time: '5 hours ago', type: 'alert' },
-      { id: 5, worker: 'Tom Brown', action: 'Safety compliance check', time: '6 hours ago', type: 'check' },
-    ];
-    setRecentActivities(activities);
+    import('@/utils/api').then(({ monitoringAPI }) => {
+      monitoringAPI.getStats().then(res => {
+        if (res.data?.success) setInitialStats(res.data.stats);
+      }).catch(console.error);
+
+      monitoringAPI.getWorkers().then(res => {
+        if (res.data?.success) setInitialWorkers(res.data.workers);
+      }).catch(console.error);
+
+      monitoringAPI.getAlerts().then(res => {
+        if (res.data?.success) {
+          setInitialAlerts(res.data.alerts);
+          
+          // Map real alerts to recent activities
+          if (res.data.alerts.length > 0) {
+            const activities = res.data.alerts.slice(0, 7).map((alert, idx) => ({
+              id: alert.id || idx,
+              worker: `Worker ${alert.workerId || 'Unknown'}`,
+              action: alert.message || 'Safety alert detected',
+              time: new Date(alert.timestamp).toLocaleString(),
+              type: alert.severity === 'high' ? 'violation' : 'alert'
+            }));
+            setRecentActivities(activities);
+          } else {
+            setRecentActivities([]);
+          }
+        }
+      }).catch(console.error);
+    });
   }, []);
+
+  // Merge websocket data with initial API data
+  const stats = (Object.keys(wsStats || {}).length > 0) ? wsStats : initialStats;
+  const workers = (wsWorkers?.length > 0) ? wsWorkers : initialWorkers;
+  const alerts = (wsAlerts?.length > 0) ? wsAlerts : initialAlerts;
 
   const features = [
     { 
@@ -263,31 +294,31 @@ export default function Dashboard() {
               subValue={`${stats?.totalWorkers || 0} Total Workers`}
               icon={UsersIcon}
               color="blue"
-              trend="+12%"
+              trend={null}
             />
             <StatsCard
               title="PPE Compliance"
-              value={`${Math.round((stats?.compliantWorkers || 0) / (stats?.totalWorkers || 1) * 100)}%`}
+              value={`${stats?.totalWorkers ? Math.round((stats?.compliantWorkers || 0) / stats?.totalWorkers * 100) : 0}%`}
               subValue={`${stats?.compliantWorkers || 0} out of ${stats?.totalWorkers || 0} compliant`}
               icon={ShieldIcon}
               color="green"
-              trend="+5%"
+              trend={null}
             />
             <StatsCard
               title="Active Alerts"
               value={stats?.alertsCount || 0}
-              subValue="Pending resolution"
+              subValue={stats?.alertsCount > 0 ? "Pending resolution" : "All clear"}
               icon={AlertTriangleIcon}
               color="red"
-              trend="-3"
+              trend={null}
             />
             <StatsCard
-              title="Efficiency Rate"
-              value="94%"
-              subValue="+8% from last week"
+              title="Assessed Efficiency"
+              value="N/A"
+              subValue="Waiting for tracking data"
               icon={TrendingUpIcon}
               color="purple"
-              trend="+8%"
+              trend={null}
             />
           </motion.div>
 
